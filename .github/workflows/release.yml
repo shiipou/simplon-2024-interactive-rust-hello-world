@@ -66,7 +66,7 @@ jobs:
             CMD_ARGS="${CMD_ARGS} --prerelease"
           fi
 
-          gh release create $CMD_ARGS "v${VERSION}" interactive-rust-hello-world.zip
+          gh release create $CMD_ARGS "v${VERSION}" artifacts/interactive-rust-hello-world.zip
   
   publish:
     if: ${{ needs.get-version.outputs.will-release == 'true' }} && ${{ needs.get-version.outputs.is-prerelease == 'false' }}
@@ -84,8 +84,8 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           user: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local_dir: "./artifacts/"
-          remote_dir: "/home/nocturlabf/www/"
+          local_dir: "./artifacts"
+          remote_dir: "/home/nocturlabf/www"
           delete: "true"
 
           
