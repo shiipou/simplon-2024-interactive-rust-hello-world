@@ -59,7 +59,7 @@ jobs:
           COMMIT: "${{ github.sha }}"
           CHANGELOGS: "${{ needs.get-version.outputs.changelogs }}"
         run: |
-          echo "${CHANGELOGS} > changelogs.md
+          echo "${CHANGELOGS}" > changelogs.md
           
           CMD_ARGS="--repo ${REPO} --target ${COMMIT} -F changelogs.md"
           if ${{ needs.get-version.outputs.is-prerelease }} ; then
