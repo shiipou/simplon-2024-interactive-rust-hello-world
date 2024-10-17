@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    branches: [ "main", "beta" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  get-version:
+    uses: shiipou/github-action/.github/workflows/get-version.yml@main
+  
+  build:
+    if: ${{ needs.get-version-outputs.will-release == "true" }}
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Rust
+      # You may pin to the exact commit or the version.
+      # uses: actions-rs/toolchain@b2417cde72dcf67f306c0ae8e0828a81bf0b189f
+      uses: actions-rs/toolchain@v1.0.6
+      with:
+        toolchain: stable
+        target: wasm32-unknown-unknown
+    - name: Install Trunk
+      uses: jetli/trunk-action@v0.5.0
+    - name: Build app
+      env:
+        VERSION: ${{ needs.get-version.outputs.version }}
+      run: trunk build --release
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: interactive-rust-hello-world
+        path: dist/
+
+  release:
+    if: ${{ needs.get-version-outputs.will-release == "true" }}
+    needs: [ get-version, build ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: interactive-rust-hello-world
+          path: artifacts/
+      - name: Zip artifacts
+        run: |
+          pushd artifacts/
+          zip -r interactive-rust-hello-world.zip ./*
+          popd
+      - name: Create Release
+        env:
+          VERSION: "${{ needs.get-version.outputs.version }}"
+          REPO: "${{ github.repository }}"
+          COMMIT: "${{ github.sha }}"
+          CHANGELOGS: "${{ needs.get-version.outputs.changelogs }}"
+        run: |
+          echo "${CHANGELOGS} > changelogs.md
+          
+          CMD_ARGS="--repo ${REPO} --target ${COMMIT} -F changelogs.md"
+          if ${{ needs.get-version.outputs.is-prerelease }} ; then
+            CMD_ARGS="${CMD_ARGS} --prerelease"
+          fi
+
+          gh release create $CMD_ARGS "v${VERSION}" interactive-rust-hello-world.zip
+  
+  publish:
+    if: ${{ needs.get-version-outputs.will-release == "true" }}
+    needs: [ get-version, build ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: interactive-rust-hello-world
+          path: artifacts/
+      - name: Upload with FTP
+        uses: airvzxf/ftp-deployment-action@latest
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          user: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local_dir: "./artifacts/"
+          remote_dir: "/home/nocturlabf/www/"
+          delete: true
+
+          
