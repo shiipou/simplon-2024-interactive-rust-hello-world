@@ -69,7 +69,7 @@ jobs:
           gh release create $CMD_ARGS "v${VERSION}" interactive-rust-hello-world.zip
   
   publish:
-    if: ${{ needs.get-version.outputs.will-release == 'true' }}
+    if: ${{ needs.get-version.outputs.will-release == 'true' }} && ${{ needs.get-version.outputs.is-prerelease == 'false' }}
     needs: [ get-version, build ]
     runs-on: ubuntu-latest
     steps:
