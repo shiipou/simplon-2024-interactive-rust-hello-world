@@ -86,6 +86,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local_dir: "./artifacts/"
           remote_dir: "/home/nocturlabf/www/"
-          delete: true
+          delete: "true"
 
           
