@@ -4,6 +4,9 @@ on:
   push:
     branches: [ "main", "beta" ]
 
+permissions:
+  contents: write$
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -58,6 +61,7 @@ jobs:
           REPO: "${{ github.repository }}"
           COMMIT: "${{ github.sha }}"
           CHANGELOGS: "${{ needs.get-version.outputs.changelogs }}"
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "${CHANGELOGS}" > changelogs.md
           
