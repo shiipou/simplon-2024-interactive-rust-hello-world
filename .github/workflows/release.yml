@@ -9,7 +9,7 @@ env:
 
 jobs:
   get-version:
-    uses: shiipou/github-action/.github/workflows/get-version.yml@main
+    uses: shiipou/github-actions/.github/workflows/get-version.yml@main
   
   build:
     if: ${{ needs.get-version-outputs.will-release == "true" }}
